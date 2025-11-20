@@ -20,9 +20,16 @@ spring:
 
 # Agent配置
 agent:
+  orchestrator:
+    default: react  # 默认编排器: react 或 plan-execute
+
   react:
     max-iterations: 5  # ReAct Agent最大迭代次数
     enable-logging: true  # 是否启用日志
+
+  plan-execute:
+    max-steps: 10  # Plan and Execute最大步骤数
+    replan-threshold: 3  # 失败重新规划的阈值
 
   tools:
     enabled:

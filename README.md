@@ -6,10 +6,12 @@
 
 本项目旨在探索和测试各种Agent设计模式，当前已实现：
 
-- **ReAct Agent模式**: Reasoning and Acting的循环执行模式
+- **编排器抽象层**: 可扩展的Agent编排架构，支持多种编排模式
+- **ReAct编排模式**: Reasoning and Acting的循环执行模式
+- **Plan and Execute编排模式**: 先制定计划后逐步执行的结构化模式
 - **工具系统**: 订单查询、产品搜索、FAQ等客服工具
 - **知识库系统**: 支持向量检索的RAG知识库，Agent可动态决定是否调用
-- **智能客服机器人**: 基于ReAct Agent的客服应用，集成知识库增强
+- **智能客服机器人**: 支持多种编排模式的客服应用，集成知识库增强
 
 ## 技术栈
 
@@ -28,7 +30,19 @@ agent-pattern-test/
 │   ├── agent/                           # Agent核心模块
 │   │   ├── core/                        # Agent抽象层
 │   │   │   ├── Agent.java              # Agent接口
-│   │   │   └── AgentContext.java       # Agent上下文
+│   │   │   ├── AgentContext.java       # Agent上下文
+│   │   │   └── ConfigurableAgent.java  # 可配置Agent
+│   │   ├── orchestrator/                # 编排器模块
+│   │   │   ├── core/                    # 编排器抽象层
+│   │   │   │   ├── Orchestrator.java   # 编排器接口
+│   │   │   │   ├── OrchestratorResult.java # 编排结果
+│   │   │   │   └── OrchestratorRegistry.java # 编排器注册表
+│   │   │   ├── react/                   # ReAct编排器
+│   │   │   │   └── ReActOrchestrator.java
+│   │   │   └── planexecute/             # Plan and Execute编排器
+│   │   │       ├── Plan.java            # 计划模型
+│   │   │       ├── PlanAndExecutePromptTemplate.java
+│   │   │       └── PlanAndExecuteOrchestrator.java
 │   │   ├── react/                       # ReAct Agent实现
 │   │   │   ├── ReactAgent.java         # ReAct Agent
 │   │   │   └── ReactPromptTemplate.java # 提示词模板
@@ -383,6 +397,164 @@ public class CustomKnowledgeLoader {
 - **动态加载**: 运行时动态添加/更新知识库
 - **相似度算法**: 支持余弦相似度、BM25、Jaccard等
 - **可扩展**: 易于集成其他向量数据库（如Pinecone、Weaviate等）
+
+## Agent编排系统
+
+### 设计理念
+
+本项目实现了Agent编排抽象层，将Agent的"思考方式"（编排策略）与"执行能力"（工具调用）分离，使得可以轻松切换和扩展不同的编排模式。
+
+### 架构
+
+```
+Agent (应用层)
+    ↓
+Orchestrator (编排层) - 定义思考和决策流程
+    ↓
+Tools (执行层) - 实际执行操作
+```
+
+### 可用编排模式
+
+#### 1. ReAct (Reasoning and Acting)
+
+**特点**: 思考-行动-观察的循环迭代
+
+**工作流程**:
+```
+1. Thought（思考）: 分析当前情况
+2. Action（行动）: 选择工具执行
+3. Observation（观察）: 获取执行结果
+4. 重复直到找到答案
+```
+
+**适用场景**:
+- 需要多步推理的问题
+- 每步依赖前一步结果
+- 动态决策路径
+
+**示例**:
+```
+Question: "查询订单ORD001并告诉我什么时候发货"
+
+Thought: 用户想知道订单发货时间，需要先查询订单
+Action: order-query
+Action Input: ORD001
+Observation: [订单信息: 已发货, 2024-01-15]
+
+Thought: 已获取订单信息，可以回答了
+Final Answer: 您的订单ORD001已于2024-01-15发货
+```
+
+#### 2. Plan and Execute
+
+**特点**: 先制定完整计划，再逐步执行
+
+**工作流程**:
+```
+阶段1 - 规划（Planning）:
+  分析问题 → 制定完整计划 → 列出所有步骤
+
+阶段2 - 执行（Execution）:
+  按顺序执行每个步骤 → 收集结果
+
+阶段3 - 综合（Synthesis）:
+  汇总所有结果 → 生成最终答案
+```
+
+**适用场景**:
+- 可以预先规划的任务
+- 需要执行多个独立步骤
+- 步骤顺序明确
+
+**示例**:
+```
+Question: "MacBook有什么型号？价格如何？保修政策是什么？"
+
+Plan:
+  Step 1: 搜索MacBook产品信息
+  Step 2: 查询保修政策信息
+  Step 3: 综合答案
+
+Execution:
+  Step 1 Result: [MacBook Air 13: ¥9,499, MacBook Pro 16: ¥19,999...]
+  Step 2 Result: [保修1年，支持AppleCare+延保...]
+
+Final Answer: MacBook系列包括...价格从¥9,499起...保修政策为...
+```
+
+### 配置编排器
+
+在`application.yml`中配置默认编排器:
+
+```yaml
+agent:
+  orchestrator:
+    default: react  # 或 plan-execute
+```
+
+### 使用编排器
+
+#### 方式1: 使用默认编排器（现有API不变）
+
+```bash
+curl -X POST http://localhost:8080/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "你的问题"}'
+```
+
+#### 方式2: 指定编排器（未来支持）
+
+通过上下文变量指定：
+```java
+AgentContext context = AgentContext.builder()
+    .input("你的问题")
+    .build();
+context.setVariable("orchestrator", "plan-execute");
+```
+
+### 编排器对比
+
+| 特性 | ReAct | Plan and Execute |
+|------|-------|------------------|
+| 思考方式 | 逐步迭代 | 预先规划 |
+| 适应性 | 高，可动态调整 | 中，按计划执行 |
+| 可预测性 | 低 | 高 |
+| LLM调用次数 | 多（每步一次） | 少（规划+执行+综合） |
+| 最适场景 | 复杂推理 | 结构化任务 |
+| 步骤透明度 | 高（每步可见） | 中（计划可见） |
+
+## 扩展新的编排模式
+
+1. 实现 `Orchestrator` 接口
+2. 定义编排逻辑
+3. 注册为Spring Bean
+
+示例：
+
+```java
+@Component
+public class MyCustomOrchestrator implements Orchestrator {
+    @Override
+    public String getName() {
+        return "my-orchestrator";
+    }
+
+    @Override
+    public OrchestratorType getType() {
+        return OrchestratorType.CUSTOM;
+    }
+
+    @Override
+    public OrchestratorResult orchestrate(AgentContext context) {
+        // 实现你的编排逻辑
+        // 1. 制定策略
+        // 2. 调用工具
+        // 3. 处理结果
+        return OrchestratorResult.success(answer, steps, time, getName());
+    }
+}
+```
 
 ## 扩展新的Agent模式
 
