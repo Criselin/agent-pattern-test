@@ -100,7 +100,78 @@ GET http://localhost:8080/api/chat/stats
 
 ###
 
-### 12. 清除会话
+### 12. 使用知识库 - iPhone使用问题
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "message": "iPhone无法开机，怎么办？",
+  "session_id": "test-session-005"
+}
+
+###
+
+### 13. 使用知识库 - MacBook性能问题
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "message": "我的MacBook运行很慢，有什么优化方法吗？",
+  "session_id": "test-session-006"
+}
+
+###
+
+### 14. 使用知识库 - AirPods连接问题
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "message": "AirPods连接不上iPhone",
+  "session_id": "test-session-007"
+}
+
+###
+
+### 15. 使用知识库 - 产品规格查询
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "message": "iPhone 15 Pro的主要规格是什么？",
+  "session_id": "test-session-008"
+}
+
+###
+
+### 16. 使用知识库 - 保修政策
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "message": "AppleCare+有什么服务内容？",
+  "session_id": "test-session-009"
+}
+
+###
+
+### 17. 复合查询（多个知识库）
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "message": "我买了MacBook Pro，如果有质量问题可以保修吗？一般保修多久？",
+  "session_id": "test-session-010"
+}
+
+###
+
+### 18. 获取统计信息
+GET http://localhost:8080/api/chat/stats
+
+###
+
+### 19. 清除会话
 DELETE http://localhost:8080/api/chat/session/test-session-001
 
 ###

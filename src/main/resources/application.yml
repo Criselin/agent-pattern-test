@@ -29,6 +29,12 @@ agent:
       - order-query
       - product-search
       - faq
+      - knowledge-search
+
+# 知识库配置
+knowledge:
+  enabled: true
+  load-sample-data: true  # 是否加载示例数据
 
 # 客服机器人配置
 chatbot:
