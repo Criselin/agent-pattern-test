@@ -1,0 +1,106 @@
+### Agent Pattern Test - API Examples
+### 使用方法: 在IntelliJ IDEA或VSCode（需要REST Client插件）中打开此文件，点击"Send Request"按钮
+
+### 1. 健康检查
+GET http://localhost:8080/api/chat/health
+
+###
+
+### 2. 获取欢迎消息
+GET http://localhost:8080/api/chat/welcome
+
+###
+
+### 3. 查询订单信息
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "message": "帮我查询订单ORD001的物流信息"
+}
+
+###
+
+### 4. 查询订单状态（配送中）
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "message": "订单ORD002的配送进度如何？",
+  "session_id": "test-session-001"
+}
+
+###
+
+### 5. 搜索iPhone产品
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "message": "我想买iPhone，有什么推荐吗？",
+  "session_id": "test-session-002"
+}
+
+###
+
+### 6. 搜索耳机产品
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "message": "给我推荐几款耳机",
+  "session_id": "test-session-003"
+}
+
+###
+
+### 7. 咨询退货政策
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "message": "请问你们的退货政策是什么？"
+}
+
+###
+
+### 8. 咨询配送信息
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "message": "你们支持哪些配送方式？多久能到？"
+}
+
+###
+
+### 9. 咨询支付方式
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "message": "支持哪些支付方式？"
+}
+
+###
+
+### 10. 复杂查询（需要多次工具调用）
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "message": "我想了解一下MacBook的价格，如果我买了之后想退货怎么办？",
+  "session_id": "test-session-004"
+}
+
+###
+
+### 11. 获取统计信息
+GET http://localhost:8080/api/chat/stats
+
+###
+
+### 12. 清除会话
+DELETE http://localhost:8080/api/chat/session/test-session-001
+
+###

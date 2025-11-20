@@ -1,0 +1,44 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: agent-pattern-test
+
+  profiles:
+    active: openai  # 默认使用 openai，可切换为 azure-openai
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:your-openai-api-key}
+      model: gpt-4
+      base-url: https://api.openai.com
+      chat:
+        options:
+          temperature: 0.7
+          max-tokens: 2000
+
+# Agent配置
+agent:
+  react:
+    max-iterations: 5  # ReAct Agent最大迭代次数
+    enable-logging: true  # 是否启用日志
+
+  tools:
+    enabled:
+      - order-query
+      - product-search
+      - faq
+
+# 客服机器人配置
+chatbot:
+  name: "智能客服助手"
+  welcome-message: "您好！我是智能客服助手，很高兴为您服务。我可以帮您查询订单、搜索产品或解答常见问题。"
+  context-window: 10  # 保留的对话轮次
+
+logging:
+  level:
+    root: INFO
+    com.example.agentpattern: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
