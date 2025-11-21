@@ -1,0 +1,15 @@
+{
+  "total_cases": 10,
+  "categories": {
+    "mathematical": 2,
+    "information_retrieval": 2,
+    "multi_step": 2,
+    "reasoning": 2,
+    "planning": 2
+  },
+  "difficulty_distribution": {
+    "easy": 3,
+    "medium": 6,
+    "hard": 1
+  }
+}

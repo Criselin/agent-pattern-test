@@ -1,0 +1,102 @@
+{
+  "mathematical": [
+    {
+      "id": "math_001",
+      "query": "What is 25 * 4 + 10?",
+      "expected_tools": [
+        "calculator"
+      ],
+      "difficulty": "easy",
+      "category": "calculation"
+    },
+    {
+      "id": "math_002",
+      "query": "Calculate the result of (100 - 25) / 5 and then multiply it by 3",
+      "expected_tools": [
+        "calculator"
+      ],
+      "difficulty": "medium",
+      "category": "calculation"
+    }
+  ],
+  "information_retrieval": [
+    {
+      "id": "info_001",
+      "query": "What is Python programming language?",
+      "expected_tools": [
+        "search"
+      ],
+      "difficulty": "easy",
+      "category": "knowledge"
+    },
+    {
+      "id": "info_002",
+      "query": "Explain what AI agents are and how they work",
+      "expected_tools": [
+        "search"
+      ],
+      "difficulty": "medium",
+      "category": "knowledge"
+    }
+  ],
+  "multi_step": [
+    {
+      "id": "multi_001",
+      "query": "What's the weather in Beijing, and if it's above 20 degrees, calculate what that is in Fahrenheit",
+      "expected_tools": [
+        "weather",
+        "calculator"
+      ],
+      "difficulty": "medium",
+      "category": "multi_step"
+    },
+    {
+      "id": "multi_002",
+      "query": "Search for information about machine learning, then calculate how many years ago it was first introduced if it was created in 1959",
+      "expected_tools": [
+        "search",
+        "calculator"
+      ],
+      "difficulty": "hard",
+      "category": "multi_step"
+    }
+  ],
+  "reasoning": [
+    {
+      "id": "reason_001",
+      "query": "If a train travels at 80 km/h for 2.5 hours, how far does it go? Calculate the distance.",
+      "expected_tools": [
+        "calculator"
+      ],
+      "difficulty": "easy",
+      "category": "reasoning"
+    },
+    {
+      "id": "reason_002",
+      "query": "I have 100 dollars. I spend 30% on food and 25% on transport. How much money do I have left?",
+      "expected_tools": [
+        "calculator"
+      ],
+      "difficulty": "medium",
+      "category": "reasoning"
+    }
+  ],
+  "planning": [
+    {
+      "id": "plan_001",
+      "query": "Help me plan a data analysis project: what steps should I follow?",
+      "expected_tools": [],
+      "difficulty": "medium",
+      "category": "planning"
+    },
+    {
+      "id": "plan_002",
+      "query": "Create a plan to learn Python programming in 3 months",
+      "expected_tools": [
+        "search"
+      ],
+      "difficulty": "medium",
+      "category": "planning"
+    }
+  ]
+}

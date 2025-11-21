@@ -1,0 +1,22 @@
+[
+  {
+    "id": "multi_001",
+    "query": "What's the weather in Beijing, and if it's above 20 degrees, calculate what that is in Fahrenheit",
+    "expected_tools": [
+      "weather",
+      "calculator"
+    ],
+    "difficulty": "medium",
+    "category": "multi_step"
+  },
+  {
+    "id": "multi_002",
+    "query": "Search for information about machine learning, then calculate how many years ago it was first introduced if it was created in 1959",
+    "expected_tools": [
+      "search",
+      "calculator"
+    ],
+    "difficulty": "hard",
+    "category": "multi_step"
+  }
+]

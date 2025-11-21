@@ -1,0 +1,47 @@
+# Agent Pattern Test Configuration
+
+# LLM Provider Settings
+llm:
+  provider: "openai"  # Options: "openai", "anthropic"
+  model: "gpt-4"      # or "claude-3-sonnet-20240229" for anthropic
+  temperature: 0.7
+  max_tokens: 2000
+
+# Agent Settings
+agents:
+  react:
+    max_iterations: 10
+    enabled: true
+
+  chain_of_thought:
+    enabled: true
+
+  plan_execute:
+    max_plan_steps: 10
+    enabled: true
+
+# Tool Settings
+tools:
+  calculator:
+    enabled: true
+
+  search:
+    enabled: true
+    mock_mode: true  # Use mock data instead of real API
+
+  weather:
+    enabled: true
+    mock_mode: true  # Use mock data instead of real API
+
+# Test Settings
+testing:
+  output_dir: "data/results"
+  log_level: "INFO"
+  save_conversations: true
+  compare_patterns: true
+
+# Logging
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/agent_test.log"

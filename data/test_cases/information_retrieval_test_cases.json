@@ -1,0 +1,20 @@
+[
+  {
+    "id": "info_001",
+    "query": "What is Python programming language?",
+    "expected_tools": [
+      "search"
+    ],
+    "difficulty": "easy",
+    "category": "knowledge"
+  },
+  {
+    "id": "info_002",
+    "query": "Explain what AI agents are and how they work",
+    "expected_tools": [
+      "search"
+    ],
+    "difficulty": "medium",
+    "category": "knowledge"
+  }
+]
