@@ -5,6 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -14,6 +15,7 @@ import java.net.UnknownHostException;
  * 用于测试各种Agent设计模式的Spring Boot应用
  */
 @Slf4j
+@EnableScheduling
 @SpringBootApplication
 public class AgentPatternApplication {
 

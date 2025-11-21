@@ -11,6 +11,7 @@
 - **Plan and Execute编排模式**: 先制定计划后逐步执行的结构化模式
 - **工具系统**: 订单查询、产品搜索、FAQ等客服工具
 - **知识库系统**: 支持向量检索的RAG知识库，Agent可动态决定是否调用
+- **会话管理系统**: 完整的会话生命周期管理和数据分析功能
 - **智能客服机器人**: 支持多种编排模式的客服应用，集成知识库增强
 
 ## 技术栈
@@ -65,6 +66,19 @@ agent-pattern-test/
 │   │   │   └── InMemoryVectorKnowledgeBase.java # 内存向量库
 │   │   └── loader/                      # 数据加载器
 │   │       └── SampleKnowledgeLoader.java # 示例数据加载
+│   ├── session/                         # 会话管理模块
+│   │   ├── model/                       # 会话模型
+│   │   │   └── Session.java            # 会话实体
+│   │   ├── manager/                     # 会话管理器
+│   │   │   ├── SessionManager.java     # 管理器接口
+│   │   │   └── DefaultSessionManager.java # 默认实现
+│   │   ├── repository/                  # 会话存储
+│   │   │   ├── SessionRepository.java  # 存储接口
+│   │   │   └── InMemorySessionRepository.java # 内存存储
+│   │   ├── analytics/                   # 会话分析
+│   │   │   └── SessionAnalytics.java   # 统计分析服务
+│   │   └── controller/                  # 会话API
+│   │       └── SessionController.java  # REST接口
 │   └── tools/                           # 具体工具实现
 │       ├── OrderQueryTool.java         # 订单查询
 │       ├── ProductSearchTool.java      # 产品搜索
@@ -397,6 +411,249 @@ public class CustomKnowledgeLoader {
 - **动态加载**: 运行时动态添加/更新知识库
 - **相似度算法**: 支持余弦相似度、BM25、Jaccard等
 - **可扩展**: 易于集成其他向量数据库（如Pinecone、Weaviate等）
+
+## 会话管理系统
+
+### 架构设计
+
+会话管理系统提供完整的对话生命周期管理和分析功能：
+
+- **Session模型**: 完整的会话状态跟踪
+- **SessionManager**: 会话生命周期管理
+- **SessionRepository**: 可扩展的存储抽象层
+- **SessionAnalytics**: 会话数据分析和统计
+
+### 核心功能
+
+#### 1. 会话管理
+
+- **会话创建**: 自动生成唯一会话ID
+- **会话状态**: ACTIVE（活跃）、INACTIVE（非活跃）、EXPIRED（过期）、CLOSED（已关闭）
+- **自动过期**: 支持TTL（默认60分钟）
+- **定时清理**: 每小时自动清理过期会话
+
+#### 2. 消息历史
+
+每个会话保存完整的消息历史：
+
+- **用户消息**: 记录用户输入
+- **助手消息**: 记录机器人回复及执行细节
+  - 执行时间（毫秒）
+  - 使用的工具列表
+  - 推理步骤数量
+  - 成功/失败状态
+  - 错误信息（如有）
+
+#### 3. 会话分析
+
+提供四大类分析功能：
+
+**整体统计**:
+- 总会话数、活跃会话数、非活跃会话数、过期会话数
+- 平均会话时长
+- 平均每会话消息数
+- 唯一用户数
+
+**用户行为分析**:
+- 用户的总会话数和消息数
+- 最常用的编排器类型
+- 用户标签统计
+- 最后活跃时间
+
+**热门话题分析**:
+- 提取对话中的高频关键词
+- 统计话题热度
+- 支持自定义TopN
+
+**时间范围统计**:
+- 指定时间段内的会话数和消息数
+- 每小时会话分布
+
+### API接口
+
+#### 会话管理
+
+```bash
+# 获取所有会话
+GET /api/sessions
+
+# 获取指定会话详情
+GET /api/sessions/{sessionId}
+
+# 获取用户的所有会话
+GET /api/sessions/user/{userId}
+
+# 根据状态查询会话
+GET /api/sessions/status/{status}
+
+# 创建新会话
+POST /api/sessions?userId=user123&ttlMinutes=120
+
+# 更新会话状态
+PUT /api/sessions/{sessionId}/status?status=CLOSED
+
+# 删除会话
+DELETE /api/sessions/{sessionId}
+
+# 清空所有会话
+DELETE /api/sessions
+
+# 手动触发清理
+POST /api/sessions/cleanup
+
+# 检查会话是否存在
+GET /api/sessions/{sessionId}/exists
+
+# 获取活跃会话数量
+GET /api/sessions/count/active
+
+# 获取总会话数量
+GET /api/sessions/count/total
+```
+
+#### 分析统计
+
+```bash
+# 获取整体统计
+GET /api/sessions/stats
+
+# 获取用户行为分析
+GET /api/sessions/analytics/user/{userId}
+
+# 获取热门话题（Top 10）
+GET /api/sessions/analytics/hot-topics?topN=10
+
+# 获取时间范围统计
+GET /api/sessions/analytics/time-range?startTime=2024-01-01T00:00:00&endTime=2024-01-31T23:59:59
+```
+
+### 配置说明
+
+在 `application.yml` 中配置会话管理：
+
+```yaml
+session:
+  default-ttl-minutes: 60      # 会话默认过期时间（分钟）
+  auto-cleanup: true           # 是否自动清理过期会话
+  cleanup-cron: "0 0 * * * ?"  # 清理任务cron表达式（每小时）
+```
+
+### 存储扩展
+
+当前实现使用内存存储（`InMemorySessionRepository`），可轻松扩展到：
+
+#### Redis存储
+
+```java
+@Component
+public class RedisSessionRepository implements SessionRepository {
+    private final RedisTemplate<String, Session> redisTemplate;
+
+    @Override
+    public Session save(Session session) {
+        redisTemplate.opsForValue().set(
+            "session:" + session.getSessionId(),
+            session,
+            session.getExpiresAt().atZone(ZoneId.systemDefault()).toEpochSecond(),
+            TimeUnit.SECONDS
+        );
+        return session;
+    }
+    // ... 其他方法实现
+}
+```
+
+#### MySQL存储
+
+```java
+@Entity
+@Table(name = "sessions")
+public class SessionEntity {
+    @Id
+    private String sessionId;
+
+    @Column(columnDefinition = "json")
+    private String messagesJson;
+
+    // ... JPA映射
+}
+
+@Repository
+public interface JpaSessionRepository extends JpaRepository<SessionEntity, String> {
+    List<SessionEntity> findByUserId(String userId);
+    List<SessionEntity> findByStatus(SessionStatus status);
+}
+```
+
+### 会话特性
+
+- **完整历史**: 保存所有对话消息和执行细节
+- **性能指标**: 跟踪每次交互的执行时间和工具使用
+- **灵活查询**: 按用户、状态、时间范围查询会话
+- **自动管理**: 自动过期和定时清理
+- **可扩展**: 支持内存、Redis、MySQL等多种存储
+- **数据分析**: 丰富的统计分析功能
+
+### 使用示例
+
+#### 查询用户会话历史
+
+```bash
+curl http://localhost:8080/api/sessions/user/user123
+```
+
+**响应**:
+```json
+[
+  {
+    "sessionId": "session-abc123",
+    "userId": "user123",
+    "status": "ACTIVE",
+    "messages": [
+      {
+        "messageId": "msg-001",
+        "role": "USER",
+        "content": "查询订单ORD001",
+        "timestamp": "2024-01-20T10:00:00"
+      },
+      {
+        "messageId": "msg-002",
+        "role": "ASSISTANT",
+        "content": "您的订单ORD001已发货...",
+        "timestamp": "2024-01-20T10:00:02",
+        "executionTimeMs": 1234,
+        "toolsUsed": ["order-query"],
+        "stepCount": 2,
+        "success": true
+      }
+    ],
+    "totalMessages": 2,
+    "createdAt": "2024-01-20T10:00:00",
+    "lastAccessedAt": "2024-01-20T10:00:02"
+  }
+]
+```
+
+#### 获取热门话题
+
+```bash
+curl http://localhost:8080/api/sessions/analytics/hot-topics?topN=5
+```
+
+**响应**:
+```json
+{
+  "totalMessages": 150,
+  "uniqueKeywords": 45,
+  "topKeywords": {
+    "订单": 35,
+    "iPhone": 28,
+    "退货": 18,
+    "配送": 15,
+    "保修": 12
+  }
+}
+```
 
 ## Agent编排系统
 

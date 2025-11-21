@@ -4,25 +4,26 @@ import com.example.agentpattern.agent.core.Agent;
 import com.example.agentpattern.agent.core.AgentContext;
 import com.example.agentpattern.chatbot.model.ChatRequest;
 import com.example.agentpattern.chatbot.model.ChatResponse;
+import com.example.agentpattern.session.manager.SessionManager;
+import com.example.agentpattern.session.model.Session;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
  * 客服机器人服务
- * 使用ReAct Agent提供智能客服功能
+ * 使用Agent提供智能客服功能，并集成完整的会话管理
  */
 @Slf4j
 @Service
 public class CustomerServiceBot {
 
     private final Agent reactAgent;
+    private final SessionManager sessionManager;
 
     @Value("${chatbot.name:智能客服助手}")
     private String botName;
@@ -33,11 +34,9 @@ public class CustomerServiceBot {
     @Value("${agent.react.max-iterations:5}")
     private int maxIterations;
 
-    // 会话存储（实际应用中应使用Redis等持久化存储）
-    private final Map<String, AgentContext> sessionStore = new ConcurrentHashMap<>();
-
-    public CustomerServiceBot(Agent reactAgent) {
+    public CustomerServiceBot(Agent reactAgent, SessionManager sessionManager) {
         this.reactAgent = reactAgent;
+        this.sessionManager = sessionManager;
     }
 
     /**
@@ -49,26 +48,70 @@ public class CustomerServiceBot {
         try {
             // 获取或创建会话
             String sessionId = request.getSessionId();
+            Session session;
+
             if (sessionId == null || sessionId.isEmpty()) {
-                sessionId = generateSessionId();
-                log.info("Created new session: {}", sessionId);
+                // 创建新会话
+                session = sessionManager.createSession(request.getUserId());
+                sessionId = session.getSessionId();
+                log.info("Created new session: {} for user: {}", sessionId, request.getUserId());
+            } else {
+                // 获取现有会话
+                session = sessionManager.getSession(sessionId)
+                        .orElseGet(() -> {
+                            log.warn("Session {} not found, creating new one", sessionId);
+                            return sessionManager.createSession(request.getUserId());
+                        });
             }
 
-            // 构建或获取上下文
-            AgentContext context = getOrCreateContext(sessionId, request.getMessage());
+            // 记录用户消息
+            Session.Message userMessage = Session.Message.builder()
+                    .messageId(UUID.randomUUID().toString())
+                    .role(Session.Message.Role.USER)
+                    .content(request.getMessage())
+                    .build();
+            session.addMessage(userMessage);
 
-            log.info("Processing chat request - Session: {}, Message: {}", sessionId, request.getMessage());
+            // 构建Agent上下文
+            AgentContext context = buildAgentContext(session, request.getMessage());
+
+            log.info("Processing chat request - Session: {}, User: {}, Message: {}",
+                    sessionId, request.getUserId(), request.getMessage());
 
             // 执行Agent
             Agent.AgentResponse agentResponse = reactAgent.execute(context);
-
-            // 更新会话存储
-            sessionStore.put(sessionId, agentResponse.getContext());
 
             long executionTime = System.currentTimeMillis() - startTime;
 
             if (agentResponse.isSuccess()) {
                 log.info("Chat completed successfully - Session: {}, Time: {}ms", sessionId, executionTime);
+
+                // 记录助手消息
+                List<String> toolsUsed = agentResponse.getContext().getSteps().stream()
+                        .map(AgentContext.AgentStep::getAction)
+                        .filter(action -> action != null && !action.isEmpty())
+                        .distinct()
+                        .collect(Collectors.toList());
+
+                Session.Message assistantMessage = Session.Message.builder()
+                        .messageId(UUID.randomUUID().toString())
+                        .role(Session.Message.Role.ASSISTANT)
+                        .content(agentResponse.getAnswer())
+                        .executionTimeMs(executionTime)
+                        .toolsUsed(toolsUsed)
+                        .stepCount(agentResponse.getContext().getSteps().size())
+                        .success(true)
+                        .build();
+                session.addMessage(assistantMessage);
+
+                // 更新会话元数据
+                String orchestrator = (String) agentResponse.getContext().getVariable("orchestrator");
+                if (orchestrator != null) {
+                    session.setOrchestratorType(orchestrator);
+                }
+
+                // 保存会话
+                sessionManager.updateSession(session);
 
                 // 构建响应（包含步骤信息用于调试）
                 List<ChatResponse.StepInfo> steps = agentResponse.getContext().getSteps().stream()
@@ -89,6 +132,21 @@ public class CustomerServiceBot {
                         .build();
             } else {
                 log.error("Chat failed - Session: {}, Error: {}", sessionId, agentResponse.getError());
+
+                // 记录失败的助手消息
+                Session.Message assistantMessage = Session.Message.builder()
+                        .messageId(UUID.randomUUID().toString())
+                        .role(Session.Message.Role.ASSISTANT)
+                        .content("处理失败")
+                        .executionTimeMs(executionTime)
+                        .success(false)
+                        .error(agentResponse.getError())
+                        .build();
+                session.addMessage(assistantMessage);
+
+                // 保存会话
+                sessionManager.updateSession(session);
+
                 return ChatResponse.failure(
                         "抱歉，处理您的请求时遇到问题：" + agentResponse.getError(),
                         sessionId
@@ -118,42 +176,25 @@ public class CustomerServiceBot {
      * 清除会话
      */
     public void clearSession(String sessionId) {
-        sessionStore.remove(sessionId);
+        sessionManager.deleteSession(sessionId);
         log.info("Cleared session: {}", sessionId);
     }
 
     /**
      * 获取活跃会话数
      */
-    public int getActiveSessionCount() {
-        return sessionStore.size();
+    public long getActiveSessionCount() {
+        return sessionManager.getActiveSessionCount();
     }
 
     /**
-     * 获取或创建上下文
+     * 构建Agent上下文
      */
-    private AgentContext getOrCreateContext(String sessionId, String input) {
-        AgentContext existingContext = sessionStore.get(sessionId);
-
-        if (existingContext != null) {
-            // 更新输入，保留历史步骤
-            existingContext.setInput(input);
-            existingContext.setCurrentIteration(0); // 重置迭代计数
-            return existingContext;
-        }
-
-        // 创建新上下文
+    private AgentContext buildAgentContext(Session session, String input) {
         return AgentContext.builder()
-                .sessionId(sessionId)
+                .sessionId(session.getSessionId())
                 .input(input)
                 .maxIterations(maxIterations)
                 .build();
-    }
-
-    /**
-     * 生成会话ID
-     */
-    private String generateSessionId() {
-        return "session-" + UUID.randomUUID().toString();
     }
 }

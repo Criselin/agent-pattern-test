@@ -171,7 +171,106 @@ GET http://localhost:8080/api/chat/stats
 
 ###
 
-### 19. 清除会话
+### 19. 清除会话（旧接口）
 DELETE http://localhost:8080/api/chat/session/test-session-001
+
+###
+
+### ============ 会话管理API ============
+
+### 20. 获取所有会话
+GET http://localhost:8080/api/sessions
+
+###
+
+### 21. 获取指定会话详情
+GET http://localhost:8080/api/sessions/session-abc123
+
+###
+
+### 22. 获取用户的所有会话
+GET http://localhost:8080/api/sessions/user/user123
+
+###
+
+### 23. 根据状态查询会话（ACTIVE）
+GET http://localhost:8080/api/sessions/status/ACTIVE
+
+###
+
+### 24. 创建新会话（默认TTL）
+POST http://localhost:8080/api/sessions?userId=user123
+
+###
+
+### 25. 创建新会话（自定义TTL：120分钟）
+POST http://localhost:8080/api/sessions?userId=user456&ttlMinutes=120
+
+###
+
+### 26. 更新会话状态为CLOSED
+PUT http://localhost:8080/api/sessions/session-abc123/status?status=CLOSED
+
+###
+
+### 27. 删除指定会话
+DELETE http://localhost:8080/api/sessions/session-abc123
+
+###
+
+### 28. 清空所有会话
+DELETE http://localhost:8080/api/sessions
+
+###
+
+### 29. 手动触发过期会话清理
+POST http://localhost:8080/api/sessions/cleanup
+
+###
+
+### 30. 检查会话是否存在
+GET http://localhost:8080/api/sessions/session-abc123/exists
+
+###
+
+### 31. 获取活跃会话数量
+GET http://localhost:8080/api/sessions/count/active
+
+###
+
+### 32. 获取总会话数量
+GET http://localhost:8080/api/sessions/count/total
+
+###
+
+### ============ 会话分析API ============
+
+### 33. 获取会话整体统计
+GET http://localhost:8080/api/sessions/stats
+
+###
+
+### 34. 获取用户行为分析
+GET http://localhost:8080/api/sessions/analytics/user/user123
+
+###
+
+### 35. 获取热门话题（Top 5）
+GET http://localhost:8080/api/sessions/analytics/hot-topics?topN=5
+
+###
+
+### 36. 获取热门话题（Top 10）
+GET http://localhost:8080/api/sessions/analytics/hot-topics?topN=10
+
+###
+
+### 37. 获取时间范围统计（2024年1月）
+GET http://localhost:8080/api/sessions/analytics/time-range?startTime=2024-01-01T00:00:00&endTime=2024-01-31T23:59:59
+
+###
+
+### 38. 获取时间范围统计（今天）
+GET http://localhost:8080/api/sessions/analytics/time-range?startTime=2024-01-20T00:00:00&endTime=2024-01-20T23:59:59
 
 ###
