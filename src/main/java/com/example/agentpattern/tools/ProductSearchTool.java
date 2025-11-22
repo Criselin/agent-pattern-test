@@ -2,46 +2,36 @@ package com.example.agentpattern.tools;
 
 import com.example.agentpattern.agent.tool.Tool;
 import com.example.agentpattern.agent.tool.ToolRegistry;
+import com.example.agentpattern.loader.ProductDataLoader;
+import com.example.agentpattern.model.ProductInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * 产品搜索工具
- * 用于搜索产品信息
+ * 支持多品牌产品搜索，从配置文件动态加载产品数据
  */
 @Slf4j
 @Component
 public class ProductSearchTool implements Tool {
 
     private final ToolRegistry toolRegistry;
+    private final ProductDataLoader productDataLoader;
 
-    // 模拟产品数据库
-    private static final List<ProductInfo> PRODUCT_DATABASE = new ArrayList<>();
-
-    static {
-        PRODUCT_DATABASE.add(new ProductInfo("iPhone 15 Pro", "手机", "¥7,999", "128GB/256GB/512GB, 钛金属设计"));
-        PRODUCT_DATABASE.add(new ProductInfo("iPhone 15", "手机", "¥5,999", "128GB/256GB/512GB, 多彩铝金属设计"));
-        PRODUCT_DATABASE.add(new ProductInfo("MacBook Pro 16", "笔记本电脑", "¥19,999", "M3 Pro芯片, 16GB内存, 512GB存储"));
-        PRODUCT_DATABASE.add(new ProductInfo("MacBook Air 13", "笔记本电脑", "¥9,499", "M2芯片, 8GB内存, 256GB存储"));
-        PRODUCT_DATABASE.add(new ProductInfo("iPad Pro 12.9", "平板电脑", "¥9,299", "M2芯片, 128GB存储, 支持Apple Pencil"));
-        PRODUCT_DATABASE.add(new ProductInfo("iPad Air", "平板电脑", "¥4,799", "M1芯片, 64GB存储"));
-        PRODUCT_DATABASE.add(new ProductInfo("AirPods Pro", "耳机", "¥1,899", "主动降噪, 自适应音频"));
-        PRODUCT_DATABASE.add(new ProductInfo("AirPods Max", "耳机", "¥4,399", "头戴式, Hi-Fi音质"));
-        PRODUCT_DATABASE.add(new ProductInfo("Apple Watch Series 9", "智能手表", "¥3,199", "健康监测, GPS"));
-    }
-
-    public ProductSearchTool(ToolRegistry toolRegistry) {
+    public ProductSearchTool(ToolRegistry toolRegistry, ProductDataLoader productDataLoader) {
         this.toolRegistry = toolRegistry;
+        this.productDataLoader = productDataLoader;
     }
 
     @PostConstruct
     public void register() {
         toolRegistry.registerTool(this);
-        log.info("ProductSearchTool registered");
+        log.info("ProductSearchTool registered with {} products across {} brands",
+                productDataLoader.getAllProducts().size(),
+                productDataLoader.getAllBrands().size());
     }
 
     @Override
@@ -51,34 +41,52 @@ public class ProductSearchTool implements Tool {
 
     @Override
     public String getDescription() {
-        return "Search for products by name or category. Input should be a product name or category (e.g., 'iPhone', '耳机', 'MacBook')";
+        return "Search for products by name, brand, or category. Supports multiple brands including Apple, Reolink, etc. " +
+               "Input should be a product name, brand, or category keyword (e.g., 'iPhone', 'Reolink', '摄像头', 'MacBook')";
     }
 
     @Override
     public ToolResult execute(String input) {
         try {
-            String query = input.trim().toLowerCase();
+            String query = input.trim();
             log.debug("Searching products with query: {}", query);
 
-            List<ProductInfo> results = PRODUCT_DATABASE.stream()
-                    .filter(p -> p.name.toLowerCase().contains(query) ||
-                               p.category.toLowerCase().contains(query))
-                    .toList();
+            // 使用产品加载器搜索
+            List<ProductInfo> results = productDataLoader.searchProducts(query);
 
             if (results.isEmpty()) {
-                return ToolResult.success("未找到匹配的产品。请尝试其他关键词。");
+                // 提供搜索建议
+                String suggestion = buildSearchSuggestion();
+                return ToolResult.success("未找到匹配的产品。\n\n" + suggestion);
             }
 
-            StringBuilder sb = new StringBuilder("找到以下产品:\n\n");
-            for (int i = 0; i < results.size(); i++) {
-                ProductInfo product = results.get(i);
-                sb.append(String.format("%d. %s\n", i + 1, product.name));
-                sb.append(String.format("   类别: %s\n", product.category));
-                sb.append(String.format("   价格: %s\n", product.price));
-                sb.append(String.format("   描述: %s\n", product.description));
-                if (i < results.size() - 1) {
+            // 限制返回结果数量，避免输出过长
+            int maxResults = 10;
+            boolean hasMore = results.size() > maxResults;
+            List<ProductInfo> limitedResults = results.stream()
+                    .limit(maxResults)
+                    .toList();
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("找到 %d 个产品", results.size()));
+            if (hasMore) {
+                sb.append(String.format("，显示前 %d 个", maxResults));
+            }
+            sb.append(":\n\n");
+
+            for (int i = 0; i < limitedResults.size(); i++) {
+                ProductInfo product = limitedResults.get(i);
+                sb.append(String.format("%d. ", i + 1));
+                sb.append(product.toFormattedString(false));
+                if (i < limitedResults.size() - 1) {
                     sb.append("\n");
                 }
+            }
+
+            if (hasMore) {
+                sb.append("\n提示: 还有 ")
+                  .append(results.size() - maxResults)
+                  .append(" 个产品未显示，请使用更具体的关键词缩小搜索范围。");
             }
 
             return ToolResult.success(sb.toString());
@@ -97,7 +105,7 @@ public class ProductSearchTool implements Tool {
                   "properties": {
                     "query": {
                       "type": "string",
-                      "description": "产品名称或类别关键词"
+                      "description": "产品名称、品牌或类别关键词"
                     }
                   },
                   "required": ["query"]
@@ -105,17 +113,30 @@ public class ProductSearchTool implements Tool {
                 """;
     }
 
-    private static class ProductInfo {
-        String name;
-        String category;
-        String price;
-        String description;
+    /**
+     * 构建搜索建议
+     */
+    private String buildSearchSuggestion() {
+        List<String> brands = productDataLoader.getAllBrands();
+        List<String> categories = productDataLoader.getAllCategories();
 
-        ProductInfo(String name, String category, String price, String description) {
-            this.name = name;
-            this.category = category;
-            this.price = price;
-            this.description = description;
+        StringBuilder sb = new StringBuilder();
+        sb.append("搜索建议:\n");
+
+        if (!brands.isEmpty()) {
+            sb.append("- 支持的品牌: ").append(String.join(", ", brands)).append("\n");
         }
+
+        if (!categories.isEmpty()) {
+            sb.append("- 支持的类别: ");
+            // 只显示前10个类别
+            List<String> limitedCategories = categories.stream().limit(10).toList();
+            sb.append(String.join(", ", limitedCategories));
+            if (categories.size() > 10) {
+                sb.append(" 等");
+            }
+        }
+
+        return sb.toString();
     }
 }

@@ -1,0 +1,218 @@
+[
+  {
+    "id": "reolink-argus-4-pro",
+    "name": "Reolink Argus 4 Pro",
+    "brand": "Reolink",
+    "category": "无线摄像头",
+    "price": "¥899",
+    "description": "4K超高清双镜头，180°超广角，ColorX夜视，双频WiFi，太阳能供电",
+    "features": [
+      "4K 8MP双镜头",
+      "180°超广角视野",
+      "ColorX全彩夜视",
+      "智能人形检测",
+      "双向语音对讲",
+      "IP66防水防尘",
+      "太阳能/电池供电"
+    ],
+    "specs": {
+      "resolution": "4K (3840×2160)",
+      "lens": "双镜头 180°",
+      "nightVision": "ColorX全彩夜视",
+      "storage": "支持microSD卡(最大256GB)",
+      "connectivity": "2.4G/5G双频WiFi",
+      "power": "可充电电池 + 太阳能板(可选)",
+      "waterproof": "IP66"
+    },
+    "tags": ["户外", "无线", "太阳能", "4K", "全彩夜视"]
+  },
+  {
+    "id": "reolink-rlc-810a",
+    "name": "Reolink RLC-810A",
+    "brand": "Reolink",
+    "category": "有线摄像头",
+    "price": "¥699",
+    "description": "4K超高清PoE摄像头，智能人车检测，内置麦克风，IP66防水，支持NVR",
+    "features": [
+      "4K 8MP超高清",
+      "智能人车检测",
+      "内置麦克风",
+      "红外夜视30米",
+      "PoE供电+传输",
+      "IP66防水防尘",
+      "支持NVR录像"
+    ],
+    "specs": {
+      "resolution": "4K (3840×2160)",
+      "lens": "单镜头 80°",
+      "nightVision": "红外夜视 30米",
+      "storage": "NVR录像 + microSD卡",
+      "connectivity": "PoE (以太网供电)",
+      "power": "PoE (802.3af)",
+      "waterproof": "IP66"
+    },
+    "tags": ["有线", "PoE", "4K", "AI检测", "NVR"]
+  },
+  {
+    "id": "reolink-e1-zoom",
+    "name": "Reolink E1 Zoom",
+    "brand": "Reolink",
+    "category": "室内摄像头",
+    "price": "¥329",
+    "description": "5MP超清室内云台摄像头，3倍光学变焦，355°水平+50°垂直，双向语音",
+    "features": [
+      "5MP超清画质",
+      "3倍光学变焦",
+      "355°水平旋转",
+      "50°垂直倾斜",
+      "智能追踪",
+      "双向语音对讲",
+      "移动侦测报警"
+    ],
+    "specs": {
+      "resolution": "5MP (2560×1920)",
+      "lens": "3倍光学变焦",
+      "nightVision": "红外夜视 12米",
+      "storage": "microSD卡(最大256GB)",
+      "connectivity": "2.4G WiFi",
+      "power": "DC 5V供电",
+      "rotation": "355°水平 + 50°垂直"
+    },
+    "tags": ["室内", "云台", "变焦", "智能追踪"]
+  },
+  {
+    "id": "reolink-duo-2-wifi",
+    "name": "Reolink Duo 2 WiFi",
+    "brand": "Reolink",
+    "category": "双目摄像头",
+    "price": "¥759",
+    "description": "双镜头6MP超清，180°全景无死角，ColorX夜视，智能人车检测，WiFi连接",
+    "features": [
+      "双镜头6MP",
+      "180°全景视野",
+      "ColorX全彩夜视",
+      "智能人车检测",
+      "双向语音",
+      "IP66防水",
+      "WiFi/PoE可选"
+    ],
+    "specs": {
+      "resolution": "6MP (3072×2048)",
+      "lens": "双镜头 180°",
+      "nightVision": "ColorX全彩夜视",
+      "storage": "microSD卡 + NVR",
+      "connectivity": "2.4G/5G WiFi 或 PoE",
+      "power": "DC 12V 或 PoE",
+      "waterproof": "IP66"
+    },
+    "tags": ["双镜头", "全景", "全彩夜视", "WiFi"]
+  },
+  {
+    "id": "reolink-trackmix-wifi",
+    "name": "Reolink TrackMix WiFi",
+    "brand": "Reolink",
+    "category": "双镜头云台摄像头",
+    "price": "¥1,099",
+    "description": "广角+长焦双镜头，广角监控+目标追踪，4K+4MP双画质，智能自动追踪",
+    "features": [
+      "广角4K + 长焦4MP",
+      "智能自动追踪",
+      "人车宠物检测",
+      "双画面同时查看",
+      "ColorX夜视",
+      "IP66防水",
+      "双频WiFi"
+    ],
+    "specs": {
+      "resolution": "广角4K + 长焦4MP",
+      "lens": "广角镜头 + 长焦云台",
+      "nightVision": "ColorX全彩夜视",
+      "storage": "microSD卡(最大256GB)",
+      "connectivity": "2.4G/5G WiFi",
+      "power": "DC 12V",
+      "waterproof": "IP66"
+    },
+    "tags": ["双镜头", "云台", "追踪", "4K", "变焦"]
+  },
+  {
+    "id": "reolink-rlk8-800b4",
+    "name": "Reolink RLK8-800B4 套装",
+    "brand": "Reolink",
+    "category": "监控套装",
+    "price": "¥3,299",
+    "description": "8路NVR+4个4K摄像头套装，2TB硬盘，PoE供电，智能人车检测，即插即用",
+    "features": [
+      "8路NVR录像机",
+      "4个4K摄像头",
+      "2TB硬盘预装",
+      "PoE一线连接",
+      "智能人车检测",
+      "7×24录像",
+      "手机远程查看"
+    ],
+    "specs": {
+      "nvr": "8路NVR，支持8个摄像头",
+      "cameras": "4个RLC-810A 4K摄像头",
+      "storage": "2TB HDD(可扩展至12TB)",
+      "resolution": "4K (3840×2160)",
+      "connectivity": "PoE (含100米网线×4)",
+      "power": "PoE供电",
+      "recording": "7×24小时录像"
+    },
+    "tags": ["套装", "NVR", "4K", "PoE", "多路"]
+  },
+  {
+    "id": "reolink-doorbell-wifi",
+    "name": "Reolink Video Doorbell WiFi",
+    "brand": "Reolink",
+    "category": "智能门铃",
+    "price": "¥599",
+    "description": "5MP高清智能门铃，180°广角，人形检测，双向对讲，快速响应，本地存储",
+    "features": [
+      "5MP超清画质",
+      "180°超广角",
+      "人形智能检测",
+      "秒级推送通知",
+      "双向语音对讲",
+      "预录+实时视频",
+      "本地microSD存储"
+    ],
+    "specs": {
+      "resolution": "5MP (2560×1920)",
+      "lens": "180°超广角",
+      "nightVision": "红外夜视",
+      "storage": "microSD卡(最大128GB)",
+      "connectivity": "2.4G/5G WiFi",
+      "power": "有线供电(8-24V)",
+      "notification": "秒级推送"
+    },
+    "tags": ["门铃", "访客", "对讲", "WiFi"]
+  },
+  {
+    "id": "reolink-lumus",
+    "name": "Reolink Lumus",
+    "brand": "Reolink",
+    "category": "泛光灯摄像头",
+    "price": "¥699",
+    "description": "内置泛光灯+警报器，ColorX夜视，人车检测，智能照明，双向对讲，WiFi连接",
+    "features": [
+      "内置LED泛光灯",
+      "内置警报器",
+      "ColorX全彩夜视",
+      "智能人车检测",
+      "自动照明",
+      "双向语音",
+      "IP66防水"
+    ],
+    "specs": {
+      "resolution": "1080P (1920×1080)",
+      "lens": "单镜头 80°",
+      "nightVision": "ColorX + 泛光灯",
+      "storage": "microSD卡(最大256GB)",
+      "connectivity": "2.4G/5G WiFi",
+      "power": "DC 12V",
+      "light": "LED泛光灯 + 警报器"
+    },
+    "tags": ["泛光灯", "警报", "全彩夜视", "照明"]
+  }
+]
