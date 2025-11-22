@@ -13,6 +13,7 @@
 - **知识库系统**: 支持向量检索的RAG知识库，Agent可动态决定是否调用
 - **会话管理系统**: 完整的会话生命周期管理和数据分析功能
 - **智能客服机器人**: 支持多种编排模式的客服应用，集成知识库增强
+- **多品牌产品支持**: 支持 Apple、Reolink 等多品牌产品咨询和推荐（可扩展）
 
 ## 技术栈
 
@@ -403,6 +404,149 @@ public class CustomKnowledgeLoader {
     }
 }
 ```
+
+## 多品牌产品支持
+
+系统现已支持**多品牌产品**的智能咨询和推荐，采用可扩展的架构设计。
+
+### 已支持品牌
+
+#### 1. Apple 产品（9款）
+- iPhone 15 Pro、iPhone 15
+- MacBook Pro 16、MacBook Air 13
+- iPad Pro 12.9、iPad Air
+- AirPods Pro、AirPods Max
+- Apple Watch Series 9
+
+#### 2. Reolink 安防产品（8款）
+- **无线摄像头**: Argus 4 Pro（4K双镜头，ColorX夜视，太阳能）
+- **有线摄像头**: RLC-810A（4K PoE，AI检测）
+- **室内云台**: E1 Zoom（5MP，3倍变焦，智能追踪）
+- **双目摄像头**: Duo 2 WiFi（180°全景，ColorX夜视）
+- **追踪摄像头**: TrackMix WiFi（广角+长焦，智能追踪）
+- **监控套装**: RLK8-800B4（8路NVR+4摄像头+2TB硬盘）
+- **智能门铃**: Video Doorbell（5MP，人形检测，双向对讲）
+- **泛光灯摄像头**: Lumus（内置泛光灯+警报器）
+
+### Reolink 产品特色
+
+#### 支持的咨询类型
+
+1. **产品搜索**
+   ```bash
+   curl -X POST http://localhost:8080/api/chat \
+     -H "Content-Type: application/json" \
+     -d '{"message": "有哪些 Reolink 摄像头？"}'
+   ```
+
+2. **技术问题**
+   ```bash
+   curl -X POST http://localhost:8080/api/chat \
+     -H "Content-Type: application/json" \
+     -d '{"message": "Reolink 摄像头连接不上 WiFi 怎么办？"}'
+   ```
+
+3. **方案设计**
+   ```bash
+   curl -X POST http://localhost:8080/api/chat \
+     -H "Content-Type: application/json" \
+     -d '{"message": "我有一个小商铺，想装监控，预算5000元"}'
+   ```
+
+#### Reolink 知识库
+
+系统包含 **3个 Reolink 专属知识库**：
+
+| 知识库 | 内容 | 文档数 |
+|--------|------|-------|
+| `reolink-product-manual` | 产品手册、功能说明、技术参数 | 4+ |
+| `reolink-tech-support` | 常见问题、故障排查、优化方案 | 3+ |
+| `reolink-installation-guide` | 安装指南、方案设计、最佳实践 | 2+ |
+
+#### 测试 Reolink 功能
+
+运行自动化测试脚本：
+
+```bash
+# 确保应用正在运行
+mvn spring-boot:run
+
+# 在另一个终端运行测试
+./test-reolink.sh
+```
+
+测试脚本包含 10 个测试场景：
+- ✓ Reolink 品牌搜索
+- ✓ 摄像头类别搜索
+- ✓ 具体产品咨询
+- ✓ 4K 摄像头搜索
+- ✓ 价格查询
+- ✓ 监控套装咨询
+- ✓ 技术问题咨询
+- ✓ WiFi 连接问题
+- ✓ PoE 摄像头咨询
+- ✓ 混合品牌搜索
+
+### 扩展新品牌
+
+添加新品牌只需 **3步**，无需修改核心代码：
+
+#### 步骤 1: 创建产品配置文件
+
+在 `src/main/resources/data/products/` 创建 JSON 文件：
+
+```json
+[
+  {
+    "id": "product-id",
+    "name": "产品名称",
+    "brand": "品牌名",
+    "category": "类别",
+    "price": "¥999",
+    "description": "产品描述",
+    "features": ["特性1", "特性2"],
+    "specs": {
+      "规格名": "规格值"
+    },
+    "tags": ["标签1", "标签2"]
+  }
+]
+```
+
+#### 步骤 2: 创建知识库加载器（可选）
+
+```java
+@Component
+public class NewBrandKnowledgeLoader {
+    private final KnowledgeBaseRegistry registry;
+
+    @PostConstruct
+    public void loadKnowledge() {
+        KnowledgeBase kb = new InMemoryVectorKnowledgeBase(
+            "brand-manual",
+            "品牌产品手册"
+        );
+
+        List<Document> docs = // 准备文档...
+        kb.addDocuments(docs);
+        registry.registerKnowledgeBase(kb);
+    }
+}
+```
+
+#### 步骤 3: 更新配置
+
+```yaml
+products:
+  supported-brands:
+    - Apple
+    - Reolink
+    - YourBrand  # 添加新品牌
+```
+
+**完成！** 重启应用即可使用新品牌。
+
+详细说明请查看 **[REOLINK_INTEGRATION.md](REOLINK_INTEGRATION.md)**
 
 ### 知识库特性
 

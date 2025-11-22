@@ -1,0 +1,212 @@
+[
+  {
+    "id": "iphone-15-pro",
+    "name": "iPhone 15 Pro",
+    "brand": "Apple",
+    "category": "手机",
+    "price": "¥7,999",
+    "description": "128GB/256GB/512GB, 钛金属设计",
+    "features": [
+      "A17 Pro芯片",
+      "6.1英寸超视网膜XDR显示屏",
+      "ProMotion自适应刷新率120Hz",
+      "48MP主摄+12MP超广角+12MP长焦",
+      "钛金属边框"
+    ],
+    "specs": {
+      "display": "6.1英寸 OLED",
+      "chip": "A17 Pro",
+      "camera": "48MP+12MP+12MP",
+      "storage": "128GB/256GB/512GB/1TB",
+      "battery": "视频播放最长23小时",
+      "charging": "MagSafe 15W + USB-C"
+    },
+    "tags": ["旗舰", "5G", "钛金属"]
+  },
+  {
+    "id": "iphone-15",
+    "name": "iPhone 15",
+    "brand": "Apple",
+    "category": "手机",
+    "price": "¥5,999",
+    "description": "128GB/256GB/512GB, 多彩铝金属设计",
+    "features": [
+      "A16仿生芯片",
+      "6.1英寸超视网膜XDR显示屏",
+      "48MP主摄+12MP超广角",
+      "动态岛设计"
+    ],
+    "specs": {
+      "display": "6.1英寸 OLED",
+      "chip": "A16 Bionic",
+      "camera": "48MP+12MP",
+      "storage": "128GB/256GB/512GB",
+      "battery": "视频播放最长20小时",
+      "charging": "MagSafe + USB-C"
+    },
+    "tags": ["主流", "5G", "动态岛"]
+  },
+  {
+    "id": "macbook-pro-16",
+    "name": "MacBook Pro 16",
+    "brand": "Apple",
+    "category": "笔记本电脑",
+    "price": "¥19,999",
+    "description": "M3 Pro芯片, 16GB内存, 512GB存储",
+    "features": [
+      "M3 Pro芯片",
+      "16.2英寸Liquid Retina XDR显示屏",
+      "120Hz ProMotion",
+      "最长22小时电池续航"
+    ],
+    "specs": {
+      "display": "16.2英寸 Mini-LED",
+      "chip": "M3 Pro/Max",
+      "memory": "16GB起",
+      "storage": "512GB起",
+      "battery": "最长22小时",
+      "ports": "3×Thunderbolt 4 + HDMI + SDXC"
+    },
+    "tags": ["专业", "高性能", "长续航"]
+  },
+  {
+    "id": "macbook-air-13-m2",
+    "name": "MacBook Air 13",
+    "brand": "Apple",
+    "category": "笔记本电脑",
+    "price": "¥9,499",
+    "description": "M2芯片, 8GB内存, 256GB存储",
+    "features": [
+      "M2芯片",
+      "13.6英寸Liquid Retina显示屏",
+      "轻薄设计1.24kg",
+      "最长18小时电池续航"
+    ],
+    "specs": {
+      "display": "13.6英寸 IPS",
+      "chip": "M2",
+      "memory": "8GB/16GB",
+      "storage": "256GB/512GB/1TB/2TB",
+      "battery": "最长18小时",
+      "weight": "1.24kg"
+    },
+    "tags": ["轻薄", "便携", "日常"]
+  },
+  {
+    "id": "ipad-pro-12.9",
+    "name": "iPad Pro 12.9",
+    "brand": "Apple",
+    "category": "平板电脑",
+    "price": "¥9,299",
+    "description": "M2芯片, 128GB存储, 支持Apple Pencil",
+    "features": [
+      "M2芯片",
+      "12.9英寸Liquid Retina XDR显示屏",
+      "ProMotion 120Hz",
+      "支持第二代Apple Pencil"
+    ],
+    "specs": {
+      "display": "12.9英寸 Mini-LED",
+      "chip": "M2",
+      "storage": "128GB/256GB/512GB/1TB/2TB",
+      "camera": "12MP广角+10MP超广角",
+      "connectivity": "Wi-Fi 6E + 5G(蜂窝版)",
+      "accessories": "Apple Pencil 2 + 妙控键盘"
+    },
+    "tags": ["专业", "创作", "大屏"]
+  },
+  {
+    "id": "ipad-air",
+    "name": "iPad Air",
+    "brand": "Apple",
+    "category": "平板电脑",
+    "price": "¥4,799",
+    "description": "M1芯片, 64GB存储",
+    "features": [
+      "M1芯片",
+      "10.9英寸Liquid Retina显示屏",
+      "支持第二代Apple Pencil",
+      "Touch ID"
+    ],
+    "specs": {
+      "display": "10.9英寸 IPS",
+      "chip": "M1",
+      "storage": "64GB/256GB",
+      "camera": "12MP广角",
+      "connectivity": "Wi-Fi 6 + 5G(蜂窝版)",
+      "accessories": "Apple Pencil 2 + 智能双面夹"
+    },
+    "tags": ["性价比", "全能", "学生"]
+  },
+  {
+    "id": "airpods-pro-2",
+    "name": "AirPods Pro",
+    "brand": "Apple",
+    "category": "耳机",
+    "price": "¥1,899",
+    "description": "主动降噪, 自适应音频",
+    "features": [
+      "主动降噪",
+      "自适应音频",
+      "个性化空间音频",
+      "H2芯片",
+      "IPX4防水"
+    ],
+    "specs": {
+      "chip": "H2",
+      "anc": "主动降噪 + 通透模式",
+      "battery": "6小时(单次) + 30小时(充电盒)",
+      "charging": "Lightning + MagSafe + Qi",
+      "waterproof": "IPX4",
+      "controls": "触控 + 音量滑动"
+    },
+    "tags": ["降噪", "无线", "便携"]
+  },
+  {
+    "id": "airpods-max",
+    "name": "AirPods Max",
+    "brand": "Apple",
+    "category": "耳机",
+    "price": "¥4,399",
+    "description": "头戴式, Hi-Fi音质",
+    "features": [
+      "40mm动圈驱动单元",
+      "主动降噪",
+      "空间音频",
+      "H1芯片",
+      "数码旋钮"
+    ],
+    "specs": {
+      "chip": "H1",
+      "driver": "40mm动圈",
+      "anc": "主动降噪 + 通透模式",
+      "battery": "最长20小时",
+      "material": "不锈钢 + 记忆海绵",
+      "controls": "数码旋钮"
+    },
+    "tags": ["头戴", "Hi-Fi", "高端"]
+  },
+  {
+    "id": "apple-watch-series-9",
+    "name": "Apple Watch Series 9",
+    "brand": "Apple",
+    "category": "智能手表",
+    "price": "¥3,199",
+    "description": "健康监测, GPS",
+    "features": [
+      "S9芯片",
+      "双指互点手势",
+      "常亮视网膜显示屏",
+      "心率监测+血氧检测+心电图"
+    ],
+    "specs": {
+      "chip": "S9 SiP",
+      "display": "LTPO OLED 常亮",
+      "health": "心率+血氧+心电图+睡眠",
+      "battery": "最长18小时",
+      "connectivity": "蓝牙5.3 + Wi-Fi",
+      "waterproof": "50米防水"
+    },
+    "tags": ["健康", "运动", "智能"]
+  }
+]

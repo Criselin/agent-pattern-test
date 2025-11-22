@@ -41,7 +41,16 @@ agent:
 # 知识库配置
 knowledge:
   enabled: true
-  load-sample-data: true  # 是否加载示例数据
+  load-sample-data: true  # 是否加载示例数据（Apple 产品）
+  load-reolink-data: true  # 是否加载 Reolink 产品知识库
+
+# 产品数据配置
+products:
+  enabled: true
+  data-path: classpath:data/products/*.json  # 产品数据文件路径
+  supported-brands:
+    - Apple
+    - Reolink  # 支持 Reolink 品牌
 
 # 客服机器人配置
 chatbot:
