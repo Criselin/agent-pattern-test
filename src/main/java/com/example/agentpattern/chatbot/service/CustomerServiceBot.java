@@ -4,6 +4,7 @@ import com.example.agentpattern.agent.core.Agent;
 import com.example.agentpattern.agent.core.AgentContext;
 import com.example.agentpattern.chatbot.model.ChatRequest;
 import com.example.agentpattern.chatbot.model.ChatResponse;
+import com.example.agentpattern.observability.tracing.ConversationTracer;
 import com.example.agentpattern.session.manager.SessionManager;
 import com.example.agentpattern.session.model.Session;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ public class CustomerServiceBot {
 
     private final Agent reactAgent;
     private final SessionManager sessionManager;
+    private final ConversationTracer conversationTracer;
 
     @Value("${chatbot.name:智能客服助手}")
     private String botName;
@@ -34,9 +36,10 @@ public class CustomerServiceBot {
     @Value("${agent.react.max-iterations:5}")
     private int maxIterations;
 
-    public CustomerServiceBot(Agent reactAgent, SessionManager sessionManager) {
+    public CustomerServiceBot(Agent reactAgent, SessionManager sessionManager, ConversationTracer conversationTracer) {
         this.reactAgent = reactAgent;
         this.sessionManager = sessionManager;
+        this.conversationTracer = conversationTracer;
     }
 
     /**
@@ -44,6 +47,14 @@ public class CustomerServiceBot {
      */
     public ChatResponse chat(ChatRequest request) {
         long startTime = System.currentTimeMillis();
+
+        // 开始追踪对话
+        String tempSessionId = request.getSessionId() != null ? request.getSessionId() : UUID.randomUUID().toString();
+        ConversationTracer.TraceContext traceContext = conversationTracer.startConversation(
+                tempSessionId,
+                request.getUserId(),
+                request.getMessage()
+        );
 
         try {
             // 获取或创建会话
@@ -113,6 +124,9 @@ public class CustomerServiceBot {
                 // 保存会话
                 sessionManager.updateSession(session);
 
+                // 结束追踪（成功）
+                conversationTracer.endConversation(sessionId, agentResponse.getAnswer(), true, null);
+
                 // 构建响应（包含步骤信息用于调试）
                 List<ChatResponse.StepInfo> steps = agentResponse.getContext().getSteps().stream()
                         .map(step -> ChatResponse.StepInfo.builder()
@@ -147,6 +161,9 @@ public class CustomerServiceBot {
                 // 保存会话
                 sessionManager.updateSession(session);
 
+                // 结束追踪（失败）
+                conversationTracer.endConversation(sessionId, null, false, agentResponse.getError());
+
                 return ChatResponse.failure(
                         "抱歉，处理您的请求时遇到问题：" + agentResponse.getError(),
                         sessionId
@@ -156,6 +173,10 @@ public class CustomerServiceBot {
         } catch (Exception e) {
             log.error("Error processing chat request", e);
             long executionTime = System.currentTimeMillis() - startTime;
+
+            // 结束追踪（异常）
+            conversationTracer.endConversation(tempSessionId, null, false, e.getMessage());
+
             return ChatResponse.builder()
                     .error("系统错误：" + e.getMessage())
                     .sessionId(request.getSessionId())
