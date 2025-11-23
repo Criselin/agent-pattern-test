@@ -167,7 +167,7 @@ public class SessionController {
             "activeSessions", stats.getActiveSessions(),
             "inactiveSessions", stats.getInactiveSessions(),
             "expiredSessions", stats.getExpiredSessions(),
-            "averageSessionDurationMinutes", stats.getAverageSessionDurationMinutes(),
+            "averageSessionDurationMinutes", stats.getAverageDurationMinutes(),
             "averageMessagesPerSession", stats.getAverageMessagesPerSession(),
             "uniqueUsers", stats.getUniqueUsers()
         ));
@@ -191,7 +191,7 @@ public class SessionController {
             "totalMessages", analytics.getTotalMessages(),
             "mostUsedOrchestrator", analytics.getMostUsedOrchestrator() != null ? analytics.getMostUsedOrchestrator() : "N/A",
             "topTags", analytics.getTopTags(),
-            "lastActiveAt", analytics.getLastActiveAt() != null ? analytics.getLastActiveAt().toString() : "N/A"
+            "lastActiveAt", analytics.getLastActiveTime() != null ? analytics.getLastActiveTime().toString() : "N/A"
         ));
     }
 
@@ -206,9 +206,8 @@ public class SessionController {
         SessionAnalytics.HotTopicsAnalytics hotTopics = sessionAnalytics.getHotTopicsAnalytics(topN);
 
         return ResponseEntity.ok(Map.of(
-            "totalMessages", hotTopics.getTotalMessages(),
-            "uniqueKeywords", hotTopics.getUniqueKeywords(),
-            "topKeywords", hotTopics.getTopKeywords()
+            "hotTopics", hotTopics.getHotTopics(),
+            "analysisTime", hotTopics.getAnalysisTime() != null ? hotTopics.getAnalysisTime().toString() : "N/A"
         ));
     }
 

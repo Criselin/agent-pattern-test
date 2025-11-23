@@ -2,6 +2,7 @@ package com.example.agentpattern.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,18 @@ import org.springframework.context.annotation.Profile;
 @Slf4j
 @Configuration
 public class AIConfig {
+
+    @Value("${spring.ai.azure.openai.api-key:NOT_SET}")
+    private String azureApiKey;
+
+    @Value("${spring.ai.azure.openai.endpoint:NOT_SET}")
+    private String azureEndpoint;
+
+    @Value("${spring.ai.azure.openai.deployment-name:NOT_SET}")
+    private String azureDeploymentName;
+
+    @Value("${spring.ai.azure.openai.version:NOT_SET}")
+    private String azureVersion;
 
     /**
      * OpenAI配置会在application.yml中的spring.ai.openai配置下自动生效
@@ -30,6 +43,19 @@ public class AIConfig {
         log.info("AI Configuration Initialized");
         log.info("ChatModel Type: {}", chatModel.getClass().getName());
         log.info("=".repeat(60));
+
+        // 打印 Azure OpenAI 配置（脱敏处理）
+        if (chatModel.getClass().getName().contains("AzureOpenAi")) {
+            log.info("Azure OpenAI Configuration:");
+            log.info("  Endpoint: {}", azureEndpoint);
+            log.info("  Deployment Name: {}", azureDeploymentName);
+            log.info("  API Version: {}", azureVersion);
+            log.info("  API Key: {}...{}",
+                    azureApiKey.substring(0, Math.min(10, azureApiKey.length())),
+                    azureApiKey.length() > 14 ? azureApiKey.substring(azureApiKey.length() - 4) : "****");
+            log.info("=".repeat(60));
+        }
+
         return new AIConfigLogger();
     }
 

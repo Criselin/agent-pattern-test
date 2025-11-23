@@ -1,6 +1,7 @@
 package com.example.agentpattern.observability.config;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -10,7 +11,6 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import io.opentelemetry.semconv.ServiceAttributes;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -51,8 +51,8 @@ public class OpenTelemetryConfig {
         Resource resource = Resource.getDefault()
                 .merge(Resource.create(
                         Attributes.builder()
-                                .put(ServiceAttributes.SERVICE_NAME, serviceName)
-                                .put(ServiceAttributes.SERVICE_VERSION, "1.0.0")
+                                .put(AttributeKey.stringKey("service.name"), serviceName)
+                                .put(AttributeKey.stringKey("service.version"), "1.0.0")
                                 .build()
                 ));
 

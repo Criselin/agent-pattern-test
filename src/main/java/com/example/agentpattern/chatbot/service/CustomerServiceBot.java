@@ -58,21 +58,23 @@ public class CustomerServiceBot {
 
         try {
             // 获取或创建会话
-            String sessionId = request.getSessionId();
             Session session;
+            final String finalSessionId;
 
-            if (sessionId == null || sessionId.isEmpty()) {
+            if (request.getSessionId() == null || request.getSessionId().isEmpty()) {
                 // 创建新会话
                 session = sessionManager.createSession(request.getUserId());
-                sessionId = session.getSessionId();
-                log.info("Created new session: {} for user: {}", sessionId, request.getUserId());
+                finalSessionId = session.getSessionId();
+                log.info("Created new session: {} for user: {}", finalSessionId, request.getUserId());
             } else {
+                final String requestSessionId = request.getSessionId();
                 // 获取现有会话
-                session = sessionManager.getSession(sessionId)
+                session = sessionManager.getSession(requestSessionId)
                         .orElseGet(() -> {
-                            log.warn("Session {} not found, creating new one", sessionId);
+                            log.warn("Session {} not found, creating new one", requestSessionId);
                             return sessionManager.createSession(request.getUserId());
                         });
+                finalSessionId = session.getSessionId();
             }
 
             // 记录用户消息
@@ -87,7 +89,7 @@ public class CustomerServiceBot {
             AgentContext context = buildAgentContext(session, request.getMessage());
 
             log.info("Processing chat request - Session: {}, User: {}, Message: {}",
-                    sessionId, request.getUserId(), request.getMessage());
+                    finalSessionId, request.getUserId(), request.getMessage());
 
             // 执行Agent
             Agent.AgentResponse agentResponse = reactAgent.execute(context);
@@ -95,7 +97,7 @@ public class CustomerServiceBot {
             long executionTime = System.currentTimeMillis() - startTime;
 
             if (agentResponse.isSuccess()) {
-                log.info("Chat completed successfully - Session: {}, Time: {}ms", sessionId, executionTime);
+                log.info("Chat completed successfully - Session: {}, Time: {}ms", finalSessionId, executionTime);
 
                 // 记录助手消息
                 List<String> toolsUsed = agentResponse.getContext().getSteps().stream()
@@ -125,7 +127,7 @@ public class CustomerServiceBot {
                 sessionManager.updateSession(session);
 
                 // 结束追踪（成功）
-                conversationTracer.endConversation(sessionId, agentResponse.getAnswer(), true, null);
+                conversationTracer.endConversation(finalSessionId, agentResponse.getAnswer(), true, null);
 
                 // 构建响应（包含步骤信息用于调试）
                 List<ChatResponse.StepInfo> steps = agentResponse.getContext().getSteps().stream()
@@ -139,13 +141,13 @@ public class CustomerServiceBot {
 
                 return ChatResponse.builder()
                         .message(agentResponse.getAnswer())
-                        .sessionId(sessionId)
+                        .sessionId(finalSessionId)
                         .success(true)
                         .executionTimeMs(executionTime)
                         .steps(steps)
                         .build();
             } else {
-                log.error("Chat failed - Session: {}, Error: {}", sessionId, agentResponse.getError());
+                log.error("Chat failed - Session: {}, Error: {}", finalSessionId, agentResponse.getError());
 
                 // 记录失败的助手消息
                 Session.Message assistantMessage = Session.Message.builder()
@@ -162,11 +164,11 @@ public class CustomerServiceBot {
                 sessionManager.updateSession(session);
 
                 // 结束追踪（失败）
-                conversationTracer.endConversation(sessionId, null, false, agentResponse.getError());
+                conversationTracer.endConversation(finalSessionId, null, false, agentResponse.getError());
 
                 return ChatResponse.failure(
                         "抱歉，处理您的请求时遇到问题：" + agentResponse.getError(),
-                        sessionId
+                        finalSessionId
                 );
             }
 

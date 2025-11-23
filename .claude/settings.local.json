@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__ide__getDiagnostics",
+      "Bash(mvn compile:*)",
+      "Bash(mvn clean compile:*)",
+      "Bash(lsof:*)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
+      "Bash(xargs kill -9)",
+      "Bash(kill:*)",
+      "Bash(env)",
+      "Bash(echo:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

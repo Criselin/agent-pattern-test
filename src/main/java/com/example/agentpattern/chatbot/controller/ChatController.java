@@ -70,7 +70,7 @@ public class ChatController {
      */
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Object>> getStats() {
-        int activeSessionCount = customerServiceBot.getActiveSessionCount();
+        long activeSessionCount = customerServiceBot.getActiveSessionCount();
         return ResponseEntity.ok(Map.of(
                 "active_sessions", activeSessionCount,
                 "status", "running"

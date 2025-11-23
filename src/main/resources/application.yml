@@ -6,17 +6,7 @@ spring:
     name: agent-pattern-test
 
   profiles:
-    active: openai  # 默认使用 openai，可切换为 azure-openai
-
-  ai:
-    openai:
-      api-key: ${OPENAI_API_KEY:your-openai-api-key}
-      model: gpt-4
-      base-url: https://api.openai.com
-      chat:
-        options:
-          temperature: 0.7
-          max-tokens: 2000
+    active: azure-openai  # 默认使用 openai，可切换为 azure-openai
 
 # Agent配置
 agent:
@@ -68,7 +58,7 @@ session:
 observability:
   # OpenTelemetry 配置
   otel:
-    enabled: true  # 启用 OpenTelemetry 追踪
+    enabled: false  # 启用 OpenTelemetry 追踪 (暂时禁用)
     service-name: agent-pattern-test  # 服务名称
     endpoint: http://localhost:4317  # OTLP gRPC endpoint（可以是 Jaeger、Tempo 等）
 

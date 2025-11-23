@@ -1,0 +1,13 @@
+spring:
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:your-openai-api-key}
+      model: gpt-4
+      base-url: https://api.openai.com
+      chat:
+        options:
+          temperature: 0.7
+          max-tokens: 2000
+  autoconfigure:
+    exclude: org.springframework.ai.autoconfigure.azure.openai.AzureOpenAiAutoConfiguration
+
