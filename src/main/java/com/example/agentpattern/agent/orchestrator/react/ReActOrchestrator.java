@@ -6,15 +6,20 @@ import com.example.agentpattern.agent.orchestrator.core.OrchestratorResult;
 import com.example.agentpattern.agent.react.ReactPromptTemplate;
 import com.example.agentpattern.agent.tool.Tool;
 import com.example.agentpattern.agent.tool.ToolRegistry;
+import com.example.agentpattern.observability.tracing.ConversationTracer;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,6 +33,9 @@ public class ReActOrchestrator implements Orchestrator {
 
     private final ChatModel chatModel;
     private final ToolRegistry toolRegistry;
+
+    @Autowired(required = false)
+    private ConversationTracer conversationTracer;
 
     // 正则表达式用于解析LLM输出
     private static final Pattern THOUGHT_PATTERN = Pattern.compile("Thought:\\s*(.+?)(?=\\n(?:Action:|Final Answer:|$))", Pattern.DOTALL);
@@ -59,6 +67,12 @@ public class ReActOrchestrator implements Orchestrator {
     public OrchestratorResult orchestrate(AgentContext context) {
         long startTime = System.currentTimeMillis();
 
+        // 开始追踪编排器
+        ConversationTracer.SpanContext spanContext = null;
+        if (conversationTracer != null) {
+            spanContext = conversationTracer.startOrchestrator(context.getSessionId(), getName());
+        }
+
         try {
             log.debug("Starting ReAct orchestration for input: {}", context.getInput());
 
@@ -81,14 +95,42 @@ public class ReActOrchestrator implements Orchestrator {
                         new UserMessage(userPrompt)
                 ));
 
-                String llmResponse = chatModel.call(prompt).getResult().getOutput().getContent();
+                // 记录 LLM 调用开始
+                String fullPrompt = systemPrompt + "\n\n" + userPrompt;
+
+                ChatResponse chatResponse = chatModel.call(prompt);
+                String llmResponse = chatResponse.getResult().getOutput().getContent();
                 log.debug("LLM Response: {}", llmResponse);
+
+                // 追踪 LLM 调用
+                if (conversationTracer != null) {
+                    Map<String, Object> usage = new HashMap<>();
+                    if (chatResponse.getMetadata() != null && chatResponse.getMetadata().getUsage() != null) {
+                        usage.put("promptTokens", chatResponse.getMetadata().getUsage().getPromptTokens());
+                        usage.put("completionTokens", chatResponse.getMetadata().getUsage().getGenerationTokens());
+                        usage.put("totalTokens", chatResponse.getMetadata().getUsage().getTotalTokens());
+                    }
+
+                    conversationTracer.recordLLMCall(
+                            context.getSessionId(),
+                            "gpt-4", // TODO: 从配置中获取模型名称
+                            fullPrompt,
+                            llmResponse,
+                            usage
+                    );
+                }
 
                 // 检查是否有最终答案
                 String finalAnswer = extractFinalAnswer(llmResponse);
                 if (finalAnswer != null) {
                     log.info("ReAct orchestration completed successfully in {} iterations", context.getCurrentIteration());
                     long executionTime = System.currentTimeMillis() - startTime;
+
+                    // 结束编排器追踪（成功）
+                    if (conversationTracer != null && spanContext != null) {
+                        conversationTracer.endOrchestrator(spanContext, context.getCurrentIteration(), true);
+                    }
+
                     return OrchestratorResult.success(
                             finalAnswer,
                             context.getSteps().size(),
@@ -105,6 +147,12 @@ public class ReActOrchestrator implements Orchestrator {
                 if (action == null) {
                     log.warn("No action found in LLM response, stopping");
                     long executionTime = System.currentTimeMillis() - startTime;
+
+                    // 结束编排器追踪（失败）
+                    if (conversationTracer != null && spanContext != null) {
+                        conversationTracer.endOrchestrator(spanContext, context.getCurrentIteration(), false);
+                    }
+
                     return OrchestratorResult.failure(
                             "Unable to determine action from LLM response",
                             context.getSteps().size(),
@@ -114,7 +162,7 @@ public class ReActOrchestrator implements Orchestrator {
                 }
 
                 // 执行工具
-                String observation = executeTool(action, actionInput);
+                String observation = executeTool(action, actionInput, context.getSessionId());
 
                 // 记录步骤
                 AgentContext.AgentStep step = AgentContext.AgentStep.builder()
@@ -132,6 +180,12 @@ public class ReActOrchestrator implements Orchestrator {
             // 达到最大迭代次数
             log.warn("Reached maximum iterations without finding final answer");
             long executionTime = System.currentTimeMillis() - startTime;
+
+            // 结束编排器追踪（失败）
+            if (conversationTracer != null && spanContext != null) {
+                conversationTracer.endOrchestrator(spanContext, context.getCurrentIteration(), false);
+            }
+
             return OrchestratorResult.failure(
                     "Reached maximum iterations without finding a final answer",
                     context.getSteps().size(),
@@ -142,6 +196,12 @@ public class ReActOrchestrator implements Orchestrator {
         } catch (Exception e) {
             log.error("Error in ReAct orchestration", e);
             long executionTime = System.currentTimeMillis() - startTime;
+
+            // 结束编排器追踪（异常）
+            if (conversationTracer != null && spanContext != null) {
+                conversationTracer.endOrchestrator(spanContext, context.getCurrentIteration(), false);
+            }
+
             return OrchestratorResult.failure(
                     "Error: " + e.getMessage(),
                     context.getSteps().size(),
@@ -171,22 +231,41 @@ public class ReActOrchestrator implements Orchestrator {
         return matcher.find() ? matcher.group(1).trim() : null;
     }
 
-    private String executeTool(String toolName, String input) {
+    private String executeTool(String toolName, String input, String sessionId) {
         Tool tool = toolRegistry.getTool(toolName).orElse(null);
 
         if (tool == null) {
             String error = "Tool not found: " + toolName + ". Available tools: " +
                     String.join(", ", toolRegistry.getToolNames());
             log.warn(error);
+
+            // 追踪工具调用失败
+            if (conversationTracer != null) {
+                conversationTracer.recordToolCall(sessionId, toolName, input, error, false);
+            }
+
             return error;
         }
 
         try {
             Tool.ToolResult result = tool.execute(input);
-            return result.isSuccess() ? result.getOutput() : "Error: " + result.getError();
+            String output = result.isSuccess() ? result.getOutput() : "Error: " + result.getError();
+
+            // 追踪工具调用
+            if (conversationTracer != null) {
+                conversationTracer.recordToolCall(sessionId, toolName, input, output, result.isSuccess());
+            }
+
+            return output;
         } catch (Exception e) {
             String error = "Error executing tool " + toolName + ": " + e.getMessage();
             log.error(error, e);
+
+            // 追踪工具调用异常
+            if (conversationTracer != null) {
+                conversationTracer.recordToolCall(sessionId, toolName, input, error, false);
+            }
+
             return error;
         }
     }

@@ -64,6 +64,21 @@ session:
   auto-cleanup: true  # 是否自动清理过期会话
   cleanup-cron: "0 0 * * * ?"  # 清理任务执行时间（每小时执行一次）
 
+# 可观测性配置
+observability:
+  # OpenTelemetry 配置
+  otel:
+    enabled: true  # 启用 OpenTelemetry 追踪
+    service-name: agent-pattern-test  # 服务名称
+    endpoint: http://localhost:4317  # OTLP gRPC endpoint（可以是 Jaeger、Tempo 等）
+
+  # Langfuse 配置
+  langfuse:
+    enabled: true  # 启用 Langfuse LLM 观测
+    host: https://cloud.langfuse.com  # Langfuse 服务地址
+    public-key: ${LANGFUSE_PUBLIC_KEY:}  # Langfuse Public Key（从环境变量获取）
+    secret-key: ${LANGFUSE_SECRET_KEY:}  # Langfuse Secret Key（从环境变量获取）
+
 logging:
   level:
     root: INFO
