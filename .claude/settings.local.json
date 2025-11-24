@@ -10,7 +10,15 @@
       "Bash(xargs kill -9)",
       "Bash(kill:*)",
       "Bash(env)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(java -version:*)",
+      "Bash(mvn:*)",
+      "Bash(/usr/libexec/java_home:*)",
+      "Bash(brew install:*)",
+      "Bash(sudo ln:*)",
+      "Bash(export JAVA_HOME=/opt/homebrew/opt/openjdk@17:*)",
+      "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
+      "Bash(source ~/.zshrc)"
     ],
     "deny": [],
     "ask": []
